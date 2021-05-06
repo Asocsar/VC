@@ -14,5 +14,6 @@ fclose(fid);
 
 
 
-IM = imread(paths(1, :));
+IM = imread(paths(3, :));
 imshow(IM);
+C:\Users\danie\OneDrive\Documents\MATLAB
