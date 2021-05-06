@@ -46,7 +46,7 @@ Means = zeros(3);
 for i = 1:3
     m = 0;
     for k = 1:num_paths
-        m = sum(Hists(k,i));
+        m = m + sum(Hists(k,i));
     end
     Means(i) = m./num_paths;
 end
