@@ -16,7 +16,7 @@ num_paths = length(paths(:, 1));
 HRL = [];
 HGL = [];
 HBL = [];
-Hists = zeros(num_paths,3);
+Hists = {}%zeros(num_paths,3);
 
 colors = ["red" , "green" , "blue"];
 crops = {};
@@ -38,19 +38,35 @@ for k = 1:3
         histogram(C, 10, 'FaceColor', colors(k));
         axis on
         hold on
-        Hists(i,k) = histogram(C, 10, 'FaceColor', colors(k));
+        [counts, binLoc] = imhist(C, 10);
+        key = k + (i-1)*3;
+        Hists{key} = [counts, binLoc];
     end
 end
 
-Means = zeros(3);
+Means = {}
 for i = 1:3
-    m = 0;
     for k = 1:num_paths
-        m = m + sum(Hists(k,i));
+        key = k + (i-1)*3;
+        if k == 1
+            m = Hists{key}(:, 1);
+        else
+            m = m + Hists{key}(:, 1);
+        end
     end
-    Means(i) = m./num_paths;
+    Means{i} = m./num_paths;
 end
 
+
+
+fig = figure; 
+tlo = tiledlayout(fig,1,3,'TileSpacing','Compact');
+for i = 1:3
+    ax = nexttile(tlo);
+    bar(Hists{key}(:, 2),Means{i},'hist');
+    axis on
+    hold on
+end
 
 
 %dist = chi2_distance(HR.Data,HR1.Data);
