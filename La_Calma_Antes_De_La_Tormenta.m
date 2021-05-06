@@ -12,18 +12,18 @@ while ischar(tline)
 end
 fclose(fid);
 
-num_paths = length(paths(:, 1))
+num_paths = length(paths(:, 1));
 HRL = [];
 HGL = [];
 HBL = [];
-Hists = zeros(num_paths,3)
+Hists = zeros(num_paths,3);
 
-colors = ["red" , "green" , "blue"]
-crops = {}
+colors = ["red" , "green" , "blue"];
+crops = {};
 
 for i = 1:num_paths
     A = imread(paths(i, :));
-    C = imcrop(A)
+    C = imcrop(A);
     crops{i} = C;
     
 end
@@ -40,6 +40,15 @@ for k = 1:3
         hold on
         Hists(i,k) = histogram(C, 10, 'FaceColor', colors(k));
     end
+end
+
+Means = zeros(3);
+for i = 1:3
+    m = 0;
+    for k = 1:num_paths
+        m = sum(Hists(k,i));
+    end
+    Means(i) = m./num_paths;
 end
 
 
