@@ -12,36 +12,36 @@ while ischar(tline)
 end
 fclose(fid);
 
+num_paths = length(paths(:, 1))
+HRL = [];
+HGL = [];
+HBL = [];
+Hists = zeros(num_paths,3)
 
-A = imread(paths(1, :));
-B = imread(paths(2, :));
+colors = ["red" , "green" , "blue"]
+crops = {}
 
-%figure; imshow(A);
-%figure; imshow(B);
-%[f, c, d] = size(I);
-
-M = imcrop(A);
-N = imcrop(B);
-%figure; imshow(M);
-
-R = M(:,:,1);
-G = M(:,:,2);
-B = M(:,:,3);
-
-R1 = N(:,:,1);
-G1 = N(:,:,2);
-B1 = N(:,:,3);
+for i = 1:num_paths
+    A = imread(paths(i, :));
+    C = imcrop(A)
+    crops{i} = C;
+    
+end
 
 
-figure;
-HR = histogram(R, 10, 'FaceColor', 'red');
-%figure;
-%HG = histogram(G, 'FaceColor', 'green');
-%figure;
-%HB = histogram(B, 'FaceColor', 'blue');
+for k = 1:3
+    fig = figure; 
+    tlo = tiledlayout(fig,2,4,'TileSpacing','Compact');
+    for i = 1:num_paths
+        C = crops{i}(:,:,k);
+        ax = nexttile(tlo);     
+        histogram(C, 10, 'FaceColor', colors(k));
+        axis on
+        hold on
+        Hists(i,k) = histogram(C, 10, 'FaceColor', colors(k));
+    end
+end
 
-figure;
-HR1 = histogram(R1, 10, 'FaceColor', 'red');
 
 
 %dist = chi2_distance(HR.Data,HR1.Data);
