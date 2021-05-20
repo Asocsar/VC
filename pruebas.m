@@ -7,7 +7,7 @@ n = 20;
 
 nbins = 255;
 
-fun = @(x) imhist(x.data(:), nbins);
+fun = @(x) [imhist(x.data(:,:,1), nbins) ; imhist(x.data(:,:,2), nbins) ; imhist(x.data(:,:,3), nbins)];
 
 R = A(:,:,1);
 G = A(:,:,2);
