@@ -1,0 +1,187 @@
+clear
+
+NBINS = 50;
+
+fid = fopen('Barza_Camisetaz.txt');
+tline = fgetl(fid);
+paths = {};
+i = 1;
+while ischar(tline)
+    if ischar(tline)
+        paths{i} = tline;
+        i = i + 1;
+    end
+    tline = fgetl(fid);
+end
+fclose(fid);
+
+num_paths = length(paths);
+HRL = [];
+HGL = [];
+HBL = [];
+Hists = {}%zeros(num_paths,3);
+
+colors = ["red" , "green" , "blue"];
+crops = {};
+
+meanN = 0;
+meanM = 0;
+for i = 1:num_paths
+    A = imread(paths{i});
+    C = imcrop(A);
+    crops{i} = C;
+    [nC, mC] = size(C(:,:,1));
+    meanN = meanN + nC;
+    meanM = meanM + mC;
+end
+
+meanN = meanN/num_paths;
+meanM = meanM/num_paths;
+
+%COMPUTE AND SHOW LOCAL TRAIN HIST
+for k = 1:3
+    %fig = figure; 
+    %tlo = tiledlayout(fig,2,4,'TileSpacing','Compact');
+    for i = 1:num_paths
+        C = crops{i}(:,:,k);
+        %ax = nexttile(tlo);     
+        %histogram(C, NBINS, 'FaceColor', colors(k));
+        %axis on
+        %hold on
+        [counts, binLoc] = hist(double(C(:)), NBINS);
+        key = k + (i-1)*3;
+        Hists{key} = [counts', binLoc'];
+    end
+end
+
+Means = {}
+for k = 1:3
+    for i = 1:num_paths
+        key = k + (i-1)*3;
+        if i == 1
+            m = Hists{key}(:, 1);
+        else
+            m = m + Hists{key}(:, 1);
+        end
+    end
+    Means{k} = m./num_paths;
+end
+
+%R_distM = [];
+%G_distM = [];
+%B_distM = [];
+
+%COMPUTE MINIMAL_DISTANCE
+%for i = 1:num_paths
+%    CR = crops{i}(:,:,1);
+%    CG = crops{i}(:,:,2);
+%    CB = crops{i}(:,:,3);
+
+%    [countsR, binLocR] = hist(double(CR(:)), NBINS);
+%    [countsG, binLocG] = hist(double(CG(:)), NBINS);
+%    [countsB, binLocB] = hist(double(CB(:)), NBINS);
+    
+
+    
+%    R_distM = [R_distM ; chi2_distance(Means{1}, countsR)];
+%    G_distM = [G_distM ; chi2_distance(Means{2}, countsG)];
+%    B_distM = [B_distM; chi2_distance(Means{3}, countsB)];
+%end
+
+%All_dists = cat(3, R_distM, G_distM, B_distM);
+
+%Mean_R = mean(R_distM(:));
+%Mean_G = mean(G_distM(:));
+%Mean_B = mean(B_distM(:));
+
+%Std_R = std(R_distM(:));
+%Std_G = std(G_distM(:));
+%Std_B = std(B_distM(:));
+
+
+
+% SHOW MEAN TRAIN
+ %fig = figure; 
+ %tlo = tiledlayout(fig,1,3,'TileSpacing','Compact');
+ %for i = 1:3
+ %   ax = nexttile(tlo);
+ %   bar(Hists{key}(:, 2),Means{i},'hist');
+ %  axis on
+ %   hold on
+ %end
+
+
+% READ ALL PATH IMAGES
+fid = fopen('All_images.txt');
+tline = fgetl(fid);
+paths = {};
+i = 1;
+while ischar(tline)
+    if ischar(tline)
+        paths{i} = tline;
+        i = i + 1;
+    end
+    tline = fgetl(fid);
+end
+fclose(fid);
+
+num_paths = length(paths);
+
+
+% COMPUTE SLIDING WINDOW HIST FOR ALL IMAGES AND CLASSIFIYING
+m = fix(meanM/2);
+n = fix(meanN/2);
+
+
+fun = @(x) historiogramaBins(x, NBINS); %[hist(double(x.data(:,:,1)), NBINS) ; hist(double(x.data(:,:,2)), NBINS) ; hist(double(x.data(:,:,3)), NBINS)];
+
+for i = 1:num_paths
+    I = imread(paths{i});
+    I = double(I) + 1;
+    H = blockproc(I,[m n], fun, 'BorderSize', [m/2 n/2], 'TrimBorder', false, 'PadPartialBlocks', true, 'UseParallel', true);
+    [r, c] = size(H);
+    H = reshape(H, NBINS, (r/NBINS)*c);
+    Res = hist_similarity(Means,H);
+    if Res
+        disp(['Image', paths{i}, 'has been detected as Barcelona team.']);
+    else
+        disp(['Image', paths{i}, 'is not Barcelona team.']);
+    end
+end
+
+
+function [counts] = historiogramaBins(Image, NBINS)
+
+Image_data = double(Image.data);
+imshow(Image_data./ max(Image_data(:)), []);
+[r, c] = size(Image_data(:,:,1));
+Image_dataR = reshape(Image_data(:, :, 1), 1, r*c);
+Image_dataG = reshape(Image_data(:, :, 2), 1, r*c);
+Image_dataB = reshape(Image_data(:, :, 3), 1, r*c);
+
+
+[countsR, binLoc] = hist(Image_dataR, 256);
+[countsG, binLoc] = hist(Image_dataG, 256);
+[countsB, binLoc] = hist(Image_dataB, 256);
+
+countsR = countsR(2:length(countsR));
+countsG = countsG(2:length(countsG));
+countsB = countsB(2:length(countsB));
+
+[countsR, binLoc] = hist(countsR, NBINS);
+[countsG, binLoc] = hist(countsG, NBINS);
+[countsB, binLoc] = hist(countsB, NBINS);
+
+
+
+counts = [countsR'; countsG'; countsB'];
+
+
+end
+
+
+
+
+
+
+%dist = chi2_distance(HR.Data,HR1.Data);
