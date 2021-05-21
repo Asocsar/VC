@@ -4,6 +4,7 @@ threshold = 50;
 [sizeH, elements] = size(H);
 [n, m] = size(Hists);
 
+mean = 0;
 Res = 0;
 
 for i = 1:3:elements
@@ -18,15 +19,18 @@ for i = 1:3:elements
             dist2 = chi2_distance(G, Hists{j+1}(:,1));
             dist3 = chi2_distance(B, Hists{j+2}(:,1));
             mean_dist = (dist1+dist2+dist3)/3;
-            if Res == 0
-                Res = mean_dist;
-
-            elseif mean_dist < Res
-                Res=mean_dist;
-            end
+            mean = mean + mean_dist;
+%             if Res == 0
+%                 Res = mean_dist;
+% 
+%             elseif mean_dist < Res
+%                 Res=mean_dist;
+%             end
         end
     end
+    
 end
+Res = mean/(elements/3);
 %Res = 1;
 end
 
