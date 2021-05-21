@@ -11,8 +11,8 @@ for i = 1:3:elements
         R = H(:,i);
         G = H(:,i+1);
         B = H(:,i+2);
-        Image = cat(3, R, G, B);
-        imshow(Image);
+%         Image = cat(3, R, G, B);
+%         imshow(Image);
         for j = 1:3:m
             dist1 = chi2_distance(R, Hists{j}(:,1));
             dist2 = chi2_distance(G, Hists{j+1}(:,1));
@@ -21,7 +21,7 @@ for i = 1:3:elements
             if Res == 0
                 Res = mean_dist;
 
-            else mean_dist < Res
+            elseif mean_dist < Res
                 Res=mean_dist;
             end
         end
