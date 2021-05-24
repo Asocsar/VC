@@ -1,7 +1,7 @@
 .\Sufrimiento\barcelona\05.jpg
 .\Sufrimiento\barcelona\07.jpg
-.\Sufrimiento\barcelona\11.jpg
-.\Sufrimiento\barcelona\13.jpg
-.\Sufrimiento\barcelona\14.jpg
-.\Sufrimiento\barcelona\22.jpg
-.\Sufrimiento\barcelona\27.jpg
+.\Sufrimiento\barcelona\34.jpg
+.\Sufrimiento\barcelona\36.jpg
+.\Sufrimiento\barcelona\28.jpg
+.\Sufrimiento\barcelona\29.jpg
+.\Sufrimiento\barcelona\32.jpg
