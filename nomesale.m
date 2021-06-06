@@ -65,10 +65,14 @@ blackM = 0;
 key = 3;
 for i = 1:num_paths
    C = crops{i}(:,:,3);
-   blackMask = C > 0.85;
-   whiteMask = C < 0.15;
-   whiteM = whiteM + sum(sum(whiteMask));
-   blackM = blackM + sum(sum(blackMask));
+   [r c] = size(C);
+   whiteMask = C > 0.85;
+   blackMask = C < 0.15;
+   whiteM = sum(sum(whiteMask));
+   %dividim entre el total de la imatge per normalitzarho segons els pixels
+   whiteM = whiteM / (r*c);
+   blackM = sum(sum(blackMask));
+   blackM = blackM / (r*c);
    masks = cat(2, whiteM, blackM);
    Hists{key} = masks;
    key = key + 3;
@@ -132,7 +136,7 @@ for i = 1:num_paths
             %k2_start = max(k2, 1);
             M = I(k2:r_end, k1:c_end, :);
             %imshow(M);
-            R = R + uint8(historiogramaBins(M, NBINS, Hists(:,(15*equips)-14:15*equips)));
+            R = max(R, uint8(historiogramaBins(M, NBINS, Hists(:,(15*equips)-14:15*equips))));
             
             end
         end
@@ -244,23 +248,32 @@ S = HistNorm(imhist(I(:, :, 2), NBINS));
 [n, m] = size(Hists);
 
 mean = 0;
-threshold = 4;%0.17;%6;%0.2;
-
+threshold = 5;%0.17;%6;%0.2;
+threshold2 = 4;
+thresholdB = 0.01;
+thresholdW = 0.01;
 for j = 1:3:m
     dist1 = pdist2(H', Hists{j}(:,1)', 'emd');
     dist2 = pdist2(S', Hists{j+1}(:,1)', 'emd');
     %dist3 = pdist2(V', Hists{j+2}(:,1)', 'emd');
     
-    BM = Hists{j+2}(1);
-    WM = Hists{j+2}(2);
+    WM = Hists{j+2}(1);
+    BM = Hists{j+2}(2);
     
-    blackMask = V > 0.85;
-    whiteMask = V < 0.15;
     [nv, mv] = size(V);
+    
+    whiteMask = V > 0.85;
+    blackMask = V < 0.15;
     half = (nv*mv)/2;
     white = sum(sum(whiteMask));
+    white = white / (nv*mv);
     black = sum(sum(blackMask));
-    mean = mean + (dist1 < threshold) + (dist2 < 2) & (white < WM) & (black < BM);
+    black = black / (nv*mv);
+    
+    distW = abs(white-WM);
+    distB = abs(black-BM);
+    
+    mean = mean + (dist1 < threshold) + (dist2 < threshold2) + (distW < thresholdW) + (distB < thresholdB);
     
 end
 
