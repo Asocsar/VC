@@ -143,7 +143,8 @@ n = fix(meanN/2);
 
 
 correct = 0;
-Y_pred = [Y_pred I];
+Y_pred = [];
+Y_true = [];
 for i = 1:num_paths
     I = rgb2hsv(imread(paths{i}));
     [r c] = size(I(:,:,1));
@@ -182,8 +183,8 @@ for i = 1:num_paths
     if contains(paths{i},Label_teams{str2num(label_imagen)})
         correct = correct + 1;
     end
-    
-        if contains(paths{i}, 'barcelona')
+    Y_pred = [Y_pred I];
+    if contains(paths{i}, 'barcelona')
         Y_true = [Y_true 1];
     elseif contains(paths{i}, 'chelsea')
         Y_true = [Y_true 2];
