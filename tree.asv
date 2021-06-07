@@ -54,8 +54,12 @@ Hists_psv = zeros(5,3*NBINS);
 index_psv = 1;
 
 for i = 1:num_paths
-    A = rgb2hsv(imread(paths{i}));
-    crops{i} = A;
+    A = imread(paths{i});
+    %imshow(A);
+    %C = getrect;
+    %C = A(C(2):C(2)+C(4), C(1):C(1)+C(3), :);
+    crops{i} = normColors(A);
+    A = normColors(A);
     [nC, mC] = size(A(:,:,1));
     meanN = meanN + nC;
     meanM = meanM + mC;
@@ -143,9 +147,9 @@ n = fix(meanN/2);
 
 
 correct = 0;
-Y_pred = [Y_pred I];
+
 for i = 1:num_paths
-    I = rgb2hsv(imread(paths{i}));
+    I = imread(paths{i});
     [r c] = size(I(:,:,1));
     
     
@@ -164,6 +168,7 @@ for i = 1:num_paths
             k2_start = max(k2, 1);
             M = I(k2_start:r_end, k1_start:c_end, :);
             %imshow(M);
+            M = normColors(M);
             [R, bins] = imhist(M(:,:,1), NBINS);
             [G, bins] = imhist(M(:,:,2), NBINS);
             [B, bins] = imhist(M(:,:,3), NBINS);
@@ -182,24 +187,9 @@ for i = 1:num_paths
     if contains(paths{i},Label_teams{str2num(label_imagen)})
         correct = correct + 1;
     end
-    
-        if contains(paths{i}, 'barcelona')
-        Y_true = [Y_true 1];
-    elseif contains(paths{i}, 'chelsea')
-        Y_true = [Y_true 2];
-    elseif contains(paths{i}, 'juventus')
-        Y_true = [Y_true 3];
-    elseif contains(paths{i}, 'liverpool')
-        Y_true = [Y_true 4];
-    elseif contains(paths{i}, 'madrid')
-        Y_true = [Y_true 5];
-    elseif contains(paths{i}, 'milan')
-        Y_true = [Y_true 6];
-    elseif contains(paths{i}, 'psv')
-        Y_true = [Y_true 7];
-    end
 
 end
-confusionchart(int8(Y_true), int8(Y_pred),'RowSummary','row-normalized','ColumnSummary','column-normalized');
+
 correct = correct/num_paths;
 disp(["Accuracy of", correct*100, "%"]);
+disp(["Precision of", (precision/(precision+precision_fl))*100, "%"]);
