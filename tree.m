@@ -123,7 +123,7 @@ Labels_psv = nonzeros(int8(Labels == 7));
 %Labels_milan = int8(Labels == 6);
 %Labels_psv = int8(Labels == 7);
 
-Tree = [100, [Hists_barcelona; Hists_chelsea; Hists_juventus; Hists_liverpool; Hists_madrid; Hists_milan; Hists_psv], Labels];
+Tree = TreeBagger(100, [Hists_barcelona; Hists_chelsea; Hists_juventus; Hists_liverpool; Hists_madrid; Hists_milan; Hists_psv;]', Labels');
 
 % Mdl_barcelona = fitcsvm(Hists_barcelona,Labels_barcelona, 'KernelFunction', 'rbf');
 % Mdl_chelsea = fitcsvm(Hists_chelsea,Labels_chelsea, 'KernelFunction', 'rbf');
@@ -270,8 +270,6 @@ for i = 1:num_paths
 %     if contains(paths{i}, Label_teams{I})
 %         correct = correct + 1;
 %     end
-table(Classifier.ClassNames,label,max(score)','VariableNames',{'Name','Label','Score'})
-sum(max(score))/30
    
     
 end
