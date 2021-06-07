@@ -2,7 +2,7 @@ clear
 close all
 clc
 
-NBINS = 40;
+NBINS = 70;
 
 fid = fopen('Recortadas.txt');
 tline = fgetl(fid);
@@ -54,8 +54,13 @@ Hists_psv = zeros(5,3*NBINS);
 index_psv = 1;
 
 for i = 1:num_paths
-    A = rgb2hsv(imread(paths{i}));
-    crops{i} = A;
+    A = imread(paths{i});
+    A = rgb2hsv(A);
+    %imshow(A);
+    %C = getrect;
+    %C = A(C(2):C(2)+C(4), C(1):C(1)+C(3), :);
+    %crops{i} = normColors(A);
+    %A = normColors(A);
     [nC, mC] = size(A(:,:,1));
     meanN = meanN + nC;
     meanM = meanM + mC;
@@ -103,15 +108,10 @@ for i = 1:num_paths
     
 end
 
-Labels_barcelona = nonzeros(int8(Labels == 1));
-Labels_chelsea = nonzeros(int8(Labels == 2));
-Labels_juventus = nonzeros(int8(Labels == 3));
-Labels_liverpool = nonzeros(int8(Labels == 4));
-Labels_madrid = nonzeros(int8(Labels == 5));
-Labels_milan = nonzeros(int8(Labels == 6));
-Labels_psv = nonzeros(int8(Labels == 7));
 
-Tree = TreeBagger(100, Hists, Labels');
+Mdl = fitcknn(Hists,Labels, 'NumNeighbors', 3);
+
+
 
 
 meanN = meanN/num_paths;
@@ -143,47 +143,81 @@ n = fix(meanN/2);
 
 
 correct = 0;
-Y_pred = [Y_pred I];
+precision = 0;
+precision_fl = 0;
+
+Y_pred = [];
+Y_true = [];
+
 for i = 1:num_paths
-    I = rgb2hsv(imread(paths{i}));
+    I = imread(paths{i});
+    %imshow(I);
     [r c] = size(I(:,:,1));
     
     
-    saltos_c = 8;
-    saltos_r = 8;
+    saltos_c = 18;
+    saltos_r = 18;
     cs = fix(c/saltos_c);
     rs = fix(r/saltos_r);
     R = 0;
-    score_imagen = 0;
-    label_imagen = "";
-    for k1 = 3:cs:c-3
-        for k2 = 3:rs:r-3
+    score_barcelona = 0;
+    score_chelsea = 0;
+    score_juventus = 0;
+    score_liverpool = 0;
+    score_madrid = 0;
+    score_milan = 0;
+    score_psv = 0;
+    resta = 5;
+    for k1 = (cs*resta):cs:c-(cs*resta)
+        for k2 = (rs*resta):rs:r-(rs*resta)
             c_end = min(k1+cs, c);
             r_end = min(k2+rs, r);
             k1_start = max(k1, 1);
             k2_start = max(k2, 1);
             M = I(k2_start:r_end, k1_start:c_end, :);
+            M = rgb2hsv(M);
             %imshow(M);
+            %M = normColors(M);
             [R, bins] = imhist(M(:,:,1), NBINS);
             [G, bins] = imhist(M(:,:,2), NBINS);
             [B, bins] = imhist(M(:,:,3), NBINS);
             X = HistNorm([R' G' B']')';
-            [label, score] = predict(Tree,X);
-            if score_imagen < max(score)
-                score_imagen = max(score);
-                label_imagen = label{1};
+            
+            [label,score_aux,cost] = predict(Mdl,X);
+            
+            frontera = 0;
+            
+            if label == 1
+                score_barcelona = score_barcelona + 1;
+            end
+            if label == 2
+                score_chelsea = score_chelsea + 1;
+            end
+            if label == 3
+                score_juventus = score_juventus + 1;
+            end
+            if label == 4
+                score_liverpool = score_liverpool + 1;
+            end
+            if label == 5
+                score_madrid = score_madrid + 1;
+            end
+            if label == 6
+                score_milan = score_milan + 1;
+            end
+            if label == 7
+                score_psv = score_psv + 1;
             end
         end
     end
     
-    disp(paths{i});
-    disp(Label_teams{str2num(label_imagen)});
-    disp(score_imagen);
-    if contains(paths{i},Label_teams{str2num(label_imagen)})
-        correct = correct + 1;
-    end
+    all_scores = [score_barcelona score_chelsea score_juventus score_liverpool score_madrid score_milan score_psv];
+    [M, I] = max(all_scores);
+    score = all_scores(I);
     
-        if contains(paths{i}, 'barcelona')
+    Y_pred = [Y_pred I];
+    
+    if contains(paths{i}, 'barcelona')
         Y_true = [Y_true 1];
     elseif contains(paths{i}, 'chelsea')
         Y_true = [Y_true 2];
@@ -198,8 +232,21 @@ for i = 1:num_paths
     elseif contains(paths{i}, 'psv')
         Y_true = [Y_true 7];
     end
-
+    
+        
+    if contains(paths{i}, Label_teams{I})
+        correct = correct + 1;
+    end
+    
 end
+
 confusionchart(int8(Y_true), int8(Y_pred),'RowSummary','row-normalized','ColumnSummary','column-normalized');
+
 correct = correct/num_paths;
 disp(["Accuracy of", correct*100, "%"]);
+
+
+
+
+
+

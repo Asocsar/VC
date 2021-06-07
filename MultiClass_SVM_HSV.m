@@ -2,7 +2,7 @@ clear
 close all
 clc
 
-NBINS = 70;
+NBINS = 15;
 
 fid = fopen('Recortadas.txt');
 tline = fgetl(fid);
@@ -58,11 +58,13 @@ for i = 1:num_paths
     %imshow(A);
     %C = getrect;
     %C = A(C(2):C(2)+C(4), C(1):C(1)+C(3), :);
-    crops{i} = normColors(A);
+    crops{i} = A;
     %A = normColors(A);
     [nC, mC] = size(A(:,:,1));
     meanN = meanN + nC;
     meanM = meanM + mC;
+    
+    A = rgb2hsv(A);
     
     [countsR, bins] = imhist(A(:,:,1), NBINS);
     [countsG, bins] = imhist(A(:,:,2), NBINS);
@@ -132,13 +134,13 @@ Labels_psv = int8(Labels == 7);
 %Mdl_milan = fitcsvm(Hists_milan,Labels_milan, 'KernelFunction', 'rbf');
 %Mdl_psv = fitcsvm(Hists_psv,Labels_psv, 'KernelFunction', 'rbf');
 
-Mdl_barcelona = fitcsvm(Hists,Labels_barcelona, 'Standardize', true);
-Mdl_chelsea = fitcsvm(Hists,Labels_chelsea, 'Standardize', true);
-Mdl_juventus = fitcsvm(Hists,Labels_juventus, 'Standardize', true);
-Mdl_liverpool = fitcsvm(Hists,Labels_liverpool, 'Standardize', true);
-Mdl_madrid = fitcsvm(Hists,Labels_madrid, 'Standardize', true);
-Mdl_milan = fitcsvm(Hists,Labels_milan, 'Standardize', true);
-Mdl_psv = fitcsvm(Hists,Labels_psv, 'Standardize', true);
+Mdl_barcelona = fitcsvm(Hists,Labels_barcelona, 'Standardize', true, 'KernelFunction', 'polynomial', 'PolynomialOrder', 1);
+Mdl_chelsea = fitcsvm(Hists,Labels_chelsea, 'Standardize', true, 'KernelFunction', 'polynomial', 'PolynomialOrder', 1);
+Mdl_juventus = fitcsvm(Hists,Labels_juventus, 'Standardize', true, 'KernelFunction', 'polynomial', 'PolynomialOrder', 1);
+Mdl_liverpool = fitcsvm(Hists,Labels_liverpool, 'Standardize', true, 'KernelFunction', 'polynomial', 'PolynomialOrder', 1);
+Mdl_madrid = fitcsvm(Hists,Labels_madrid, 'Standardize', true, 'KernelFunction', 'polynomial', 'PolynomialOrder', 1);
+Mdl_milan = fitcsvm(Hists,Labels_milan, 'Standardize', true, 'KernelFunction', 'polynomial', 'PolynomialOrder', 1);
+Mdl_psv = fitcsvm(Hists,Labels_psv, 'Standardize', true, 'KernelFunction', 'polynomial', 'PolynomialOrder', 1);
 
 
 
@@ -173,7 +175,7 @@ n = fix(meanN/2);
 
 correct = 0;
 precision = 0;
-precision_fl = 0;
+
 
 Y_pred = [];
 Y_true = [];
@@ -196,14 +198,16 @@ for i = 1:num_paths
     score_madrid = 0;
     score_milan = 0;
     score_psv = 0;
-    for k1 = (cs*6):cs:c-(cs*6)
-        for k2 = (rs*6):rs:r-(rs*6)
+    resta = 6;
+    for k1 = (cs*resta):cs:c-(cs*resta)
+        for k2 = (rs*resta):rs:r-(rs*resta)
             c_end = min(k1+cs, c);
             r_end = min(k2+rs, r);
             k1_start = max(k1, 1);
             k2_start = max(k2, 1);
             M = I(k2_start:r_end, k1_start:c_end, :);
             %imshow(M);
+            M = rgb2hsv(M);
             %M = normColors(M);
             [R, bins] = imhist(M(:,:,1), NBINS);
             [G, bins] = imhist(M(:,:,2), NBINS);
@@ -267,7 +271,6 @@ for i = 1:num_paths
     end
     
     all_scores = [score_barcelona score_chelsea score_juventus score_liverpool score_madrid score_milan score_psv];
-    %all_scores = mod(all_scores, 20);
     [M, I] = max(all_scores);
     score = all_scores(I);
     
@@ -279,8 +282,8 @@ for i = 1:num_paths
         correct = correct + 1;
     end
     
-        Y_pred = [Y_pred I];
-    
+    Y_pred = [Y_pred I];
+
     if contains(paths{i}, 'barcelona')
         Y_true = [Y_true 1];
     elseif contains(paths{i}, 'chelsea')
