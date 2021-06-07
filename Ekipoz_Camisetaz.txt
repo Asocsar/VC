@@ -23,11 +23,11 @@
 .\Sufrimiento\liverpool\08.jpg
 .\Sufrimiento\liverpool\10.jpg
 .\Sufrimiento\liverpool\11.jpg
-.\Sufrirmiento\madrid\03.jpg
-.\Sufrirmiento\madrid\11.jpg
-.\Sufrirmiento\madrid\14.jpg
-.\Sufrirmiento\madrid\15.jpg
-.\Sufrirmiento\madrid\17.jpg
+.\Sufrimiento\madrid\03.jpg
+.\Sufrimiento\madrid\11.jpg
+.\Sufrimiento\madrid\14.jpg
+.\Sufrimiento\madrid\15.jpg
+.\Sufrimiento\madrid\17.jpg
 .\Sufrimiento\psv\01.jpg
 .\Sufrimiento\psv\02.jpg
 .\Sufrimiento\psv\05.jpg
