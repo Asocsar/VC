@@ -72,8 +72,24 @@ for i = 1:num_paths
     Hists(i,:) = [countsR' countsG' countsB'];
 end
 
+Labels_barcelona = int8(Labels == 1);
+Labels_chelsea = int8(Labels == 2);
+Labels_juventus = int8(Labels == 3);
+Labels_liverpool = int8(Labels == 4);
+Labels_madrid = int8(Labels == 5);
+Labels_milan = int8(Labels == 6);
+Labels_psv = int8(Labels == 7);
 
-Mdl = fitcknn(Hists,Labels, 'NumNeighbors',4)
+
+Mdl_barcelona = fitcsvm(Hists,Labels_barcelona, 'KernelFunction', 'rbf');
+Mdl_chelsea = fitcsvm(Hists,Labels_chelsea, 'KernelFunction', 'rbf');
+Mdl_juventus = fitcsvm(Hists,Labels_juventus, 'KernelFunction', 'rbf');
+Mdl_liverpool = fitcsvm(Hists,Labels_liverpool, 'KernelFunction', 'rbf');
+Mdl_madrid = fitcsvm(Hists,Labels_madrid, 'KernelFunction', 'rbf');
+Mdl_milan = fitcsvm(Hists,Labels_milan, 'KernelFunction', 'rbf');
+Mdl_psv = fitcsvm(Hists,Labels_psv, 'KernelFunction', 'rbf');
+
+
 
 
 meanN = meanN/num_paths;
@@ -119,7 +135,13 @@ for i = 1:num_paths
     cs = fix(c/saltos_c);
     rs = fix(r/saltos_r);
     R = 0;
-    score = 0;
+    score_barcelona = 0;
+    score_chelsea = 0;
+    score_juventus = 0;
+    score_liverpool = 0;
+    score_madrid = 0;
+    score_milan = 0;
+    score_psv = 0;
     for k1 = 1:cs:c
         for k2 = 1:rs:r
             c_end = min(k1+cs, c);
@@ -127,24 +149,53 @@ for i = 1:num_paths
             k1_start = max(k1, 1);
             k2_start = max(k2, 1);
             M = I(k2_start:r_end, k1_start:c_end, :);
+            imshow(M);
             %M = normColors(M);
             [R, bins] = imhist(M(:,:,1), NBINS);
             [G, bins] = imhist(M(:,:,2), NBINS);
             [B, bins] = imhist(M(:,:,3), NBINS);
             X = [R' G' B'];
-            label = predict(Mdl,X);
-            if score_aux >= 0
-                score = score + 1;
+            [label,score_barcelona] = predict(Mdl_barcelona,X);
+            [label,score_chelsea] = predict(Mdl_chelsea,X);
+            [label,score_juventus] = predict(Mdl_juventus,X);
+            [label,score_liverpool] = predict(Mdl_liverpool,X);
+            [label,score_madrid] = predict(Mdl_madrid,X);
+            [label,score_milan] = predict(Mdl_milan,X);
+            [label,score_psv] = predict(Mdl_psv,X);
+            if score_barcelona >= 0
+                score_barcelona = score_barcelona + 1;
+            end
+            if score_chelsea >= 0
+                score_chelsea = score_chelsea + 1;
+            end
+            if score_juventus >= 0
+                score_juventus = score_juventus + 1;
+            end
+            if score_liverpool >= 0
+                score_liverpool = score_liverpool + 1;
+            end
+            if score_madrid >= 0
+                score_madrid = score_madrid + 1;
+            end
+            if score_milan >= 0
+                score_milan = score_milan + 1;
+            end
+            if score_psv >= 0
+                score_psv = score_psv + 1;
             end
         end
     end
     
+    all_scores = [score_barcelona score_chelsea score_juventus score_liverpool score_madrid score_milan score_psv];
+    [M, I] = max(all_scores);
+    score = all_scores(i);
+    
     if score >= 12
         disp(paths{i});
-        disp(["Image is from barça"]);
+        disp(["Image is from " Label_teams{I}]);
         %disp([R]);
         
-        if i <= 36
+        if contains(paths{i}, Label_teams{I})
             correct = correct + 1;
             precision = precision + 1;
         end
